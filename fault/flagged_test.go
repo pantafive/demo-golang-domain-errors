@@ -6,23 +6,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/pantafive/demo-golang-domain-errors/fault"
 )
 
-var (
-	errRoot  = errors.New("root error")
-	errChild = errors.New("child error")
-)
+func ExampleFlag() {
+	err := fault.New(errors.New("some error"), fault.Alfa) //nolint:goerr113
 
-func TestFlagged_ExampleUsage(t *testing.T) {
-	err := fault.New(errRoot, fault.Alfa)
-
-	if err == nil {
-		require.True(t, false) // no errors - unexpected
+	if err == nil { //nolint:revive
+		// do nothing
 	}
 
+	// error.As will "unwrap" the error and assign it to flaggedError
 	flaggedError := fault.Blank()
 
 	_ = errors.As(err, &flaggedError)
@@ -33,13 +28,20 @@ func TestFlagged_ExampleUsage(t *testing.T) {
 	// In this way, we achieve Checked Exceptions effect.
 	switch flaggedError.Flag() {
 	case fault.Alfa:
-		require.True(t, true) // handle alfa - expected
+		fmt.Print("Error with Alfa flag handled")
 	case fault.Bravo:
-		require.True(t, false) // handle bravo - unexpected
+		// handle Bravo flag
 	default:
-		require.True(t, false) // handle unknown - unexpected
+		// handle generic error
 	}
+
+	// Output: Error with Alfa flag handled
 }
+
+var (
+	errRoot  = errors.New("root error")
+	errChild = errors.New("child error")
+)
 
 func TestFlagged_Is(t *testing.T) {
 	err := fault.New(errRoot, fault.Alfa)

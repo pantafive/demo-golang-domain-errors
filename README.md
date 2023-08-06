@@ -22,16 +22,11 @@ package fault_test
 import (
 	"errors"
 	"fmt"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-var (
-	ErrSpecific = errors.New("specific error")
-)
+var ErrSpecific = errors.New("specific error")
 
-func TestSentinelError_ExampleUsage(t *testing.T) {
+func ExampleSentinelError() {
 	err := errors.New("third party error")
 
 	// add context to the error, mark it as ErrSpecific
@@ -39,19 +34,16 @@ func TestSentinelError_ExampleUsage(t *testing.T) {
 
 	err = fmt.Errorf("wrap the error: %w", err)
 
-	specificErrorOccurred := false
-
 	switch {
 	case err == nil:
 		// do nothing
 	case errors.Is(err, ErrSpecific):
-		// handle specific error
-		specificErrorOccurred = true
+		fmt.Print("Specific error occurred")
 	default:
 		// generic error handling
 	}
 
-	assert.True(t, specificErrorOccurred)
+	// Output: Specific error occurred
 }
 
 ```
@@ -67,12 +59,43 @@ a
 flag – enum value that will be used in the switch statement in the following way:
 
 ```go
-switch err.Flag() {
-case FlagAlfa:
-// handle error with Alfa flag
-default:
-// default error handling
+package fault_test
+
+import (
+	"errors"
+	"fmt"
+
+	"github.com/pantafive/demo-golang-domain-errors/fault"
+)
+
+func ExampleFlag() {
+	err := fault.New(errors.New("some error"), fault.Alfa)
+
+	if err == nil {
+		// do nothing
+	}
+
+	// error.As will "unwrap" the error and assign it to flaggedError
+	flaggedError := fault.Blank()
+
+	_ = errors.As(err, &flaggedError)
+
+	// In the example we intentionally ignore flagged.Charlie to demonstrate that
+	// exhaustive linter will alert us about it:
+	// missing cases in a switch of type flagged.Flag: flagged.Charlie (exhaustive).
+	// In this way, we achieve Checked Exceptions effect.
+	switch flaggedError.Flag() {
+	case fault.Alfa:
+		fmt.Print("Error with Alfa flag handled")
+	case fault.Bravo:
+		// handle Bravo flag
+	default:
+		// handle generic error
+	}
+
+	// Output: Error with Alfa flag handled
 }
+
 ```
 
 Exhaustive linter will report if there are missing cases in the switch statement.
@@ -80,7 +103,7 @@ You can run `golangci-lint run ./src` to see it in action:
 
 ```
 ❯ golangci-lint run ./fault
-fault/flagged_test.go:34:2: missing cases in switch of type fault.Flag: fault.Charlie (exhaustive)
+fault/flagged_test.go:29:2: missing cases in switch of type fault.Flag: fault.Charlie (exhaustive)
 ```
 
 ---
