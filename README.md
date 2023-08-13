@@ -69,14 +69,14 @@ import (
 )
 
 func ExampleFlag() {
-	err := fault.New(errors.New("some error"), fault.Alfa)
+	err := fault.New(errors.New("some error"), fault.Alfa) //nolint:goerr113
 
-	if err == nil {
+	if err == nil { //nolint:revive
 		// do nothing
 	}
 
 	// error.As will "unwrap" the error and assign it to flaggedError
-	flaggedError := fault.Blank()
+	var flaggedError fault.Flagged
 
 	_ = errors.As(err, &flaggedError)
 
@@ -129,12 +129,6 @@ type Flagged interface {
 // New creates a new flagged error from the existing error and provided flag.
 func New(err error, flag Flag) Flagged {
 	return fault{error: err, flag: flag}
-}
-
-// Blank creates empty Flagged error.
-// It is used to pass as a pointer to errors.As.
-func Blank() Flagged {
-	return fault{}
 }
 
 type fault struct {

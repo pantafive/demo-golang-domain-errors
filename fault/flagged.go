@@ -18,12 +18,6 @@ func New(err error, flag Flag) Flagged {
 	return fault{error: err, flag: flag}
 }
 
-// Blank creates empty Flagged error.
-// It is used to pass as a pointer to errors.As.
-func Blank() Flagged {
-	return fault{}
-}
-
 type fault struct {
 	error
 	flag Flag

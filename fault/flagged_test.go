@@ -18,7 +18,7 @@ func ExampleFlag() {
 	}
 
 	// error.As will "unwrap" the error and assign it to flaggedError
-	flaggedError := fault.Blank()
+	var flaggedError fault.Flagged
 
 	_ = errors.As(err, &flaggedError)
 
@@ -54,7 +54,7 @@ func TestFlagged_Is(t *testing.T) {
 func TestFlagged_As(t *testing.T) {
 	err := fault.New(errRoot, fault.Alfa)
 
-	want := fault.Blank()
+	var want fault.Flagged
 
 	assert.True(t, errors.As(err, &want))
 	assert.Equal(t, want.Flag(), fault.Alfa)
@@ -70,7 +70,7 @@ func TestFlagged_Wrap(t *testing.T) {
 
 	wrappedErr := fmt.Errorf("wrapped: %w", err)
 
-	want := fault.Blank()
+	var want fault.Flagged
 
 	assert.True(t, errors.Is(wrappedErr, errRoot))
 	assert.True(t, errors.As(wrappedErr, &want))
@@ -81,7 +81,7 @@ func TestFlagged_Join(t *testing.T) {
 
 	joinedErr := errors.Join(err, errChild)
 
-	want := fault.Blank()
+	var want fault.Flagged
 
 	assert.True(t, errors.Is(joinedErr, errRoot))
 	assert.True(t, errors.Is(joinedErr, errChild))
@@ -92,7 +92,7 @@ func TestFlagged_FlagOverFlag(t *testing.T) {
 	err := fault.New(errRoot, fault.Alfa)
 	err = fault.New(err, fault.Bravo)
 
-	want := fault.Blank()
+	var want fault.Flagged
 	assert.True(t, errors.As(err, &want))
 	assert.Equal(t, want.Flag(), fault.Bravo)
 }
